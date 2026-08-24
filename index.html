@@ -1,0 +1,509 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<title>日记 — 第一章（工作版）</title>
+<style>
+  :root{
+    --bg-night-1:#060712; --bg-night-2:#071028;
+    --bg-day-1:#faf7ef; --bg-day-2:#fffdf6;
+    --accent:#7bf0b2; --muted:#9fb7c9;
+  }
+  html,body{height:100%;margin:0;font-family:system-ui,-apple-system,"Noto Sans SC","PingFang SC",sans-serif;color:#e6f7ff;background:linear-gradient(180deg,var(--bg-night-1),var(--bg-night-2));-webkit-font-smoothing:antialiased;}
+  .topbar{position:fixed;left:0;right:0;top:0;height:72px;display:flex;align-items:center;padding:10px 12px;gap:8px;z-index:1400;background:rgba(0,0,0,0.36);backdrop-filter:blur(6px)}
+  .brand{font-weight:700;color:var(--accent);font-size:16px;cursor:pointer}
+  .controls{display:flex;gap:8px;align-items:center;margin-left:12px}
+  .ctrlBtn{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.03);padding:8px 10px;border-radius:10px;color:var(--muted);cursor:pointer;user-select:none;touch-action:manipulation}
+  .ctrlBtn:active{transform:translateY(1px)}
+  .rightGroup{margin-left:auto;display:flex;align-items:center;gap:10px;padding-right:12px}
+  input[type=range]{width:180px;touch-action:pan-x}
+  .pageWrap{max-width:1000px;margin:96px auto 40px;padding:12px;box-sizing:border-box}
+  .page{border-radius:12px;padding:18px;border:1px solid rgba(255,255,255,0.03);background:linear-gradient(180deg,rgba(255,255,255,0.01),rgba(0,0,0,0.02));box-shadow:0 30px 80px rgba(0,0,0,0.6);position:relative}
+  .reader{height:68vh;max-height:calc(100vh - 220px);overflow-y:auto;padding-right:12px;line-height:1.9;font-size:18px;-webkit-overflow-scrolling:touch}
+  .chapterTitle{font-size:26px;margin:0 0 8px 0;color:var(--accent)}
+  .meta{font-size:13px;color:var(--muted);margin-bottom:12px}
+  p{margin:0 0 12px 0;text-align:justify}
+  .footerNote{text-align:center;color:var(--muted);margin-top:10px}
+  .corner{position:absolute;right:16px;top:16px;opacity:0.06;font-size:110px;transform:rotate(-12deg);pointer-events:none}
+  .imgModal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(2,6,10,0.72);z-index:1600;backdrop-filter:blur(6px)}
+  .imgBox{width:min(920px,94%);max-height:92vh;border-radius:12px;overflow:hidden;background:linear-gradient(180deg,#02101a,#041a2b);display:flex;flex-direction:column}
+  .imgInner{flex:1;display:flex;align-items:center;justify-content:center;padding:10px}
+  .imgInner img{max-width:100%;max-height:84vh;border-radius:6px}
+  .imgNav{position:absolute;top:50%;transform:translateY(-50%);width:56px;height:56px;border-radius:10px;background:rgba(0,0,0,0.28);display:flex;align-items:center;justify-content:center;color:var(--accent);font-size:28px;cursor:pointer}
+  .imgNav.right{right:10px}.imgNav.left{left:10px}
+  .imgClose{position:absolute;right:12px;top:12px;padding:8px;border-radius:8px;background:rgba(255,255,255,0.03);cursor:pointer;color:var(--muted)}
+  .imgFooter{text-align:center;padding:8px;color:var(--muted)}
+  #rainCanvas{position:fixed;left:0;top:0;width:100%;height:100%;z-index:1500;pointer-events:none;display:none;mix-blend-mode:screen;opacity:0.95}
+  body.day{background:linear-gradient(180deg,var(--bg-day-1),var(--bg-day-2));color:#101018}
+  body.day .ctrlBtn{background:rgba(0,0,0,0.03);color:#333}
+  @media(max-width:560px){ input[type=range]{width:120px} .chapterTitle{font-size:20px} .ctrlBtn{padding:8px 8px;font-size:13px} .reader{height:60vh} }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand" id="brand">日记 • 第一章</div>
+
+  <div class="controls" id="controls">
+    <button id="langBtn" class="ctrlBtn">中文/EN</button>
+    <button id="themeBtn" class="ctrlBtn">夜/日</button>
+    <button id="pageModeBtn" class="ctrlBtn">滚动/翻页</button>
+    <button id="textInc" class="ctrlBtn">A+</button>
+    <button id="textDec" class="ctrlBtn">A-</button>
+    <button id="imagesBtn" class="ctrlBtn">图片</button>
+    <button id="rainBtn" class="ctrlBtn">雨/无</button>
+  </div>
+
+  <div class="rightGroup">
+    <label style="color:var(--muted);font-size:13px">滚动</label>
+    <input id="scrollRange" type="range" min="0" max="100" value="0" />
+  </div>
+</div>
+
+<canvas id="rainCanvas" aria-hidden="true"></canvas>
+
+<div class="pageWrap">
+  <div class="page" id="page">
+    <div class="corner">古</div>
+    <div class="reader" id="reader" tabindex="0">
+      <h2 class="chapterTitle" id="chapterTitle">第一章 • 理性之书</h2>
+      <div id="content">
+        <h2>引言</h2>
+
+<p>这个世界能够容纳短暂的愉悦与欢欣时刻，这些时刻有时甚至很强烈，会获得价值并引发依恋，但由于宇宙的二元结构，幸福这一概念要么不可能实现，要么以扭曲的形式存在。</p>
+
+<p>从术语上看，所谓“幸福”被定义为快乐的最高点，这本身就是一种反乌托邦——因为这意味着所有积极感受的光谱被限定在一个称为“幸福”的最高边界之内。</p>
+
+<p>而这个维度最可憎的讹误在于，这个“边界”因人而异，并且只能在人逝去之后去衡量。</p>
+
+<p>当一个人的生命结束时，那生前所经历的最高幸福点将被称作“幸福”；此外，这种幸福是短暂的，并且在最好的情况下仅与痛苦成正比，通常情况下痛苦会超出任何曾经体验到的良善。</p>
+
+<p>因为良善需要通过劳动与痛苦去争取，而痛苦却像默认状态一样存在。</p>
+
+<p>而最扭曲的玩笑在于，对“你将获得幸福”的期待，通常比你实际得到的要更为鲜明与强烈。</p>
+
+<p>这种形式的“幸福”是令人厌恶且扭曲的。</p>
+
+<p>真正的幸福应当是良善、愉悦与享受的永续增长，没有陨落与痛苦。</p>
+
+<p>然而，这种存在形式在这个世界上是不可能的乌托邦，而“石榴花园”本身即是这一乌托邦的象征。</p>
+
+<p>那是一个没有失败者的胜利者之世、没有仇恨的爱、没有痛苦的喜悦、没有限制的可能性。</p>
+
+<p>在这里，你最灿烂最快乐的被遗忘的童年记忆得以重现；你的梦想与追求获得形体；在这里你被赋予意义，没有无聊，没有痛苦。</p>
+
+<p>只有无尽的、永续增长的至福充盈，这种至福永不厌倦，在快感的光谱上不断扩展，直至无限。</p>
+
+<p>而且，石榴花园并非一个普适的、集体的场所。每个人都有自己的石榴花园，里面有各自的角色与规则。</p>
+
+<p>因为每个人有不同的价值观、需求、梦想以及使之感到幸福的诸多特性。</p>
+
+<p>这就是所谓真正的幸福，正因为其本性，它在物质世界中无法企及。</p>
+
+<p>但矛盾在于，人类的意志却向往那里，灵魂渴求那样的享乐、愉悦、喜悦与无限的狂喜。</p>
+
+<p>因此物质世界成了监牢，限制了我们意志的需求。</p>
+
+<p>物质向“间域”（例如碳基物质向有机体）演化，然后间域成为意识的载体，意识再上升为“自性”。</p>
+
+<p>通往自性的道路使人接近石榴花园。进化即是通往石榴花园的道路。</p>
+
+<h2>术语</h2>
+
+<p>梦应当被划分为等级：</p>
+
+<p>0 — 微梦（梦境在清醒状态中的突现）</p>
+<p>1 — 睡眠（普通梦）</p>
+<p>2 — 关于清醒梦的梦（梦中梦）</p>
+<p>3 — 清醒梦</p>
+<p>4 — 超真实沉浸梦（高度真实的梦）</p>
+<p>5 — 相位体验（感觉像是脱体体验）</p>
+<p>6 — 自有世界（个人创造的内在世界）</p>
+<p>7 — 超级世界（更高层次的世界）</p>
+<p>8 — 通往石榴花园的门扉</p>
+<p>9 — 石榴花园（终极之境）</p>
+
+<p>子层级：</p>
+
+<p>1 — 浅层梦</p>
+<p>2 — 普通梦</p>
+<p>3 — 深层梦</p>
+<p>4 — 真实感梦</p>
+<p>5 — 超真实梦</p>
+
+<p>其他术语：</p>
+
+<p>1 — 睡眠瘫痪</p>
+<p>2 — 入睡幻觉（昏睡幻觉）</p>
+<p>3 — 原型（典型形象）</p>
+<p>4 — 图尔帕（思想形态/心灵造物）</p>
+<p>5 — 奇境（Wonderland）</p>
+
+<p>文物（/神器）等级：</p>
+
+<p>1 — 已创造（人工或有意造出）</p>
+<p>2 — 被发现的（偶然获得）</p>
+<p>3 — 按梦境指引获得的（梦中指示下得到）</p>
+<p>4 — 心灵类（存在于梦境中的精神类文物）</p>
+<p>5 — 传说级文物（从梦境进入清醒世界的存在）</p>
+
+<h2>睡眠瘫痪</h2>
+
+<p>睡眠瘫痪，或称觉醒性肌无力，是一种在从睡眠觉醒时（或较少见地在入睡时）出现的全身或部分肌肉失去功能的状态。在这种状态下，人体被暂时定住，无法说话，也无法睁开眼睛，但仍能控制眼球运动。它通常发生于未完全觉醒或未完全入睡的过渡阶段。此时人常会看到幻觉或梦境片段。</p>
+
+<p>在修行石榴花园的道路上，行者应学会有意地进入并利用这一状态，将其作为通往更深层体验与工作的工具。</p>
+
+<h2>入睡幻觉（Hypnagogia）</h2>
+
+<p>入睡幻觉是介于清醒与睡眠之间的一种中间状态，特点是有意识地感知无意识中的意象。在这种状态下，可能出现听觉、视觉、触觉甚至逻辑性的幻觉，同时也可能伴随睡眠瘫痪。</p>
+
+<p>入睡幻觉常被用于创造图尔帕、与原型交流、进入清醒梦或刻意触发睡眠瘫痪等实践。</p>
+
+<h2>原型</h2>
+
+<p>原型是存在于人类集体无意识中的古老、原始的意象、原型或理念，能够在神话、文学、艺术、生物学与信息领域中显现。在荣格的分析心理学中，原型被视为先天的、普遍的心理结构，影响着我们的行为与感知，形成重复出现的意象与故事情节。</p>
+
+<p>可以粗略地将其分为三类：原型意象（例如每个人无意识中存在的炼金符号等）、近似原型（试图传达真原型精髓的回响，能量较弱）、以及真实原型（如阿尼玛、阿尼姆斯、阴影、自性等）。</p>
+
+<p>真实原型能提升梦境层级，仿佛活体般与人建立联系，能跨梦而行、影响无意识并传授智慧。</p>
+
+<h2>图尔帕（Tulpa）</h2>
+
+<p>图尔帕是一种由自我暗示产生的幻觉。图尔帕可能显得像独立存在的个体，成为你的对话伙伴——类似想象中的朋友。现代也有专门的图尔帕修习实践，这一现象受到研究者的关注。</p>
+
+<p>创造图尔帕需要大量时间、专注与纪律性的心智。其基本方法包含以下步骤：</p>
+
+<p>1 — 设想图尔帕的外貌、性格、声音、行为举止与偏好等细节。</p>
+<p>2 — 尽可能频繁地将其在心中可视化，与之互动，像对待一个想象朋友那样交流与玩耍。</p>
+
+<p>随着时间推移，图尔帕会变得愈发自主，最终转化为一种自治的幻觉。</p>
+
+<p>为了加速图尔帕的形成，可以在清醒梦、入睡幻觉、睡眠瘫痪或你的奇境中与其互动。</p>
+
+<h2>奇境（Wonderland）</h2>
+
+<p>奇境是一个想象出的世界，其深度取决于个体所处的恍惚或恍惚深度。恍惚越深，越接近入睡幻觉状态，奇境则愈发获得相对的自主性与稳定性。</p>
+
+<p>在荣格术语中，这类体验被称为“主动想象”（active imagination），是一种有意在内部世界中展开的想象性活动。</p>
+
+<h2>石榴花园与清醒世界</h2>
+
+<p>清醒世界——一个由三维空间与时间构成、物质具有量子结构的维度；对于人类自性的本质而言，这个世界的平衡倾向于苦难。</p>
+
+<p>与此同时，我们并不能真正与其直接交互。我们所做的，只是分析大脑根据感官接收到的信息构建出的这个世界的投影；人类关于这个世界的全部宏观认知，或多或少最终归结为哲学论述。这意味着世界对每个人而言都是主观的。</p>
+
+<p>量子物理与相对论告诉我们，现实本身具有相对性。那么，既然这个带给我们更多痛苦而不是快乐的世界并非绝对，为何我们仍坚信其真实性？</p>
+
+<p>对有意识的观察者而言，唯一的公理是其自身的“我”。因此，梦境比起物质的清醒世界更接近某种根本的真实。</p>
+
+<p>石榴花园是梦的理想形态，是最接近真实“我”（超越世俗自我的自性）的一种状态。它是自我认识的至高点，也是可能实现幸福的特殊存在方式。</p>
+
+<p>在那里，你会做一个幸福的梦，明白你是谁；在那里没有痛苦，你有意义；在那里主观时间感会被拉长，使得一夜之间可以渡过数十年、乃至一生。</p>
+
+<h2>从何开始</h2>
+
+<p>首先，修行者应当准备两本日记。</p>
+
+<p>1 — 梦境日记：用于记录所有记住的梦。这将提升梦境记忆，并有助于日后对梦的分析。</p>
+
+<p>日记记录规则包括：为每个梦设立标题（为每个梦命名）、日期、月相、大致入睡与醒来时间、梦的等级与子层级。</p>
+
+<p>在上述信息之后记录梦的具体内容，随后写下在梦中遇到的梦征（即那些能指示这是梦的特征）。</p>
+
+<p>2 — 实践日记：用于记录思想、实验、推论、获得的知识、进入清醒梦的练习以及一切与通往石榴花园之路相关的实践内容。</p>
+
+<p>为增强观念性与神经学上的联结，可以使用插图、贴纸、签名、示意图等辅助材料以丰富日记。</p>
+
+<p>日记应以笔名或真实姓名签署。</p>
+
+<p>同样重要的是，需要制定在梦中觉知时的行动计划。</p>
+
+<p>例如：</p>
+
+<p>1 — 飞行</p>
+<p>2 — 召唤原型</p>
+<p>3 — 提升梦的层级</p>
+
+<p>该行动计划也应记录在日记中。</p>
+        <p class="footerNote">— 索姆尼·阿科·德乌斯 —</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div class="imgModal" id="imgModal" aria-hidden="true">
+  <div class="imgBox" role="dialog" aria-modal="true">
+    <div class="imgInner" id="imgInner"></div>
+    <div class="imgNav left" id="imgPrev">‹</div>
+    <div class="imgNav right" id="imgNext">›</div>
+    <div class="imgClose" id="imgClose">✕</div>
+    <div class="imgFooter" id="imgFooter">图片 1 / 9</div>
+  </div>
+</div>
+
+<script>
+
+document.addEventListener('DOMContentLoaded', () => {
+  
+  const $ = s => document.querySelector(s);
+  const reader = $('#reader');
+  const scrollRange = $('#scrollRange');
+  const langBtn = $('#langBtn');
+  const themeBtn = $('#themeBtn');
+  const pageModeBtn = $('#pageModeBtn');
+  const textInc = $('#textInc');
+  const textDec = $('#textDec');
+  const imagesBtn = $('#imagesBtn');
+  const rainBtn = $('#rainBtn');
+  const brand = $('#brand');
+
+  const imgModal = $('#imgModal');
+  const imgInner = $('#imgInner');
+  const imgPrev = $('#imgPrev');
+  const imgNext = $('#imgNext');
+  const imgClose = $('#imgClose');
+  const imgFooter = $('#imgFooter');
+
+  const rainCanvas = $('#rainCanvas');
+  const rainCtx = rainCanvas.getContext ? rainCanvas.getContext('2d') : null;
+
+  
+  let audioCtx = null, masterGain = null, audioReady = false;
+  function ensureAudio(){
+    if (!audioCtx){
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      masterGain = audioCtx.createGain(); masterGain.gain.value = 0.12; masterGain.connect(audioCtx.destination);
+      audioReady = true;
+    }
+  }
+  function tone(freq=900, dur=0.06, type='sine', vol=0.09){
+    if (!audioReady) return;
+    const o = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    o.type = type; o.frequency.setValueAtTime(freq, audioCtx.currentTime);
+    g.gain.setValueAtTime(vol, audioCtx.currentTime);
+    o.connect(g); g.connect(masterGain);
+    o.start(); g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + dur); o.stop(audioCtx.currentTime + dur + 0.02);
+  }
+  function initAudioOnce(){
+    ensureAudio(); tone(1200,0.04,'triangle',0.06);
+    window.removeEventListener('pointerdown', initAudioOnce, {capture:true});
+  }
+  window.addEventListener('pointerdown', initAudioOnce, {capture:true});
+
+  
+  function updateRangeFromScroll(){
+    const max = reader.scrollHeight - reader.clientHeight;
+    scrollRange.value = (max <= 0) ? 0 : Math.round((reader.scrollTop / max) * 100);
+  }
+  function updateScrollFromRange(){
+    const max = reader.scrollHeight - reader.clientHeight;
+    reader.scrollTop = Math.round(max * (scrollRange.value / 100));
+  }
+  reader.addEventListener('scroll', updateRangeFromScroll);
+  scrollRange.addEventListener('input', updateScrollFromRange);
+  window.addEventListener('load', ()=> setTimeout(updateRangeFromScroll, 160));
+  window.addEventListener('resize', ()=> setTimeout(updateRangeFromScroll, 160));
+
+  
+  brand.addEventListener('click', ()=> { reader.scrollTo({top:0, behavior:'smooth'}); if (!audioReady) ensureAudio(); tone(1000,0.03,'sine',0.06); });
+
+  
+  let lang = 'CN';
+  langBtn.addEventListener('click', () => {
+    if (!audioReady) ensureAudio(); tone(1200,0.04,'triangle',0.06);
+    lang = (lang === 'CN') ? 'EN' : 'CN';
+    if (lang === 'EN'){
+      brand.textContent = 'Diary · Chapter I';
+      $('#chapterTitle').textContent = 'Chapter I · Night & Circuits';
+      $('#meta').textContent = 'Year — Iteration 9 | Location: Net Node • Inner';
+      imagesBtn.textContent = 'Images';
+      pageModeBtn.textContent = 'Scroll/Flip';
+      themeBtn.textContent = 'Night/Day';
+      rainBtn.textContent = 'Rain/Off';
+    } else {
+      brand.textContent = '日记 • 第一章';
+      $('#chapterTitle').textContent = '第一章 · 夜与电路';
+      $('#meta').textContent = '公元 — 迭代年 9 | 地点：虚网节点 • 深处';
+      imagesBtn.textContent = '图片';
+      pageModeBtn.textContent = '滚动/翻页';
+      themeBtn.textContent = '夜/日';
+      rainBtn.textContent = '雨/无';
+    }
+  });
+
+  
+  function updateThemeBtn(){ themeBtn.textContent = document.body.classList.contains('day') ? (lang==='EN' ? 'Day/Night' : '日/夜') : (lang==='EN' ? 'Night/Day' : '夜/日'); }
+  themeBtn.addEventListener('click', ()=> {
+    if (!audioReady) ensureAudio(); tone(1000,0.04,'triangle',0.06);
+    document.body.classList.toggle('day');
+    updateThemeBtn();
+  });
+  updateThemeBtn();
+
+  
+  let fontSize = 18;
+  textInc.addEventListener('click', ()=> { fontSize = Math.min(32, fontSize+2); reader.style.fontSize = fontSize + 'px'; if (!audioReady) ensureAudio(); tone(1200,0.04,'sine',0.06); setTimeout(updateRangeFromScroll,80); });
+  textDec.addEventListener('click', ()=> { fontSize = Math.max(12, fontSize-2); reader.style.fontSize = fontSize + 'px'; if (!audioReady) ensureAudio(); tone(800,0.04,'sine',0.06); setTimeout(updateRangeFromScroll,80); });
+
+  
+  const IMG_COUNT = 9, IMG_PREFIX = 'pag'; let currentImg = 1;
+  function makeImg(idx){
+    const img = document.createElement('img');
+    img.src = `${IMG_PREFIX}${idx}.png`;
+    img.alt = `pag${idx}`;
+    img.loading = 'lazy';
+    img.style.maxWidth = '100%';
+    img.style.maxHeight = '84vh';
+    img.addEventListener('error', ()=> { img.replaceWith(document.createTextNode(`图片未找到: ${IMG_PREFIX}${idx}.png`)); });
+    return img;
+  }
+  function openGallery(start=1){
+    currentImg = start; imgInner.innerHTML=''; imgInner.appendChild(makeImg(currentImg)); imgFooter.textContent = (lang==='EN' ? 'Image ' : '图片 ') + `${currentImg} / ${IMG_COUNT}`; imgModal.style.display='flex'; imgModal.setAttribute('aria-hidden','false'); if (!audioReady) ensureAudio(); tone(1300,0.05,'square',0.1);
+  }
+  function closeGallery(){ imgModal.style.display='none'; imgModal.setAttribute('aria-hidden','true'); if (!audioReady) ensureAudio(); tone(600,0.04,'sine',0.06); }
+  function prevImg(){ currentImg = (currentImg<=1)?IMG_COUNT:currentImg-1; imgInner.innerHTML=''; imgInner.appendChild(makeImg(currentImg)); imgFooter.textContent = (lang==='EN' ? 'Image ' : '图片 ') + `${currentImg} / ${IMG_COUNT}`; if (!audioReady) ensureAudio(); tone(900,0.04,'square',0.08); }
+  function nextImg(){ currentImg = (currentImg>=IMG_COUNT)?1:currentImg+1; imgInner.innerHTML=''; imgInner.appendChild(makeImg(currentImg)); imgFooter.textContent = (lang==='EN' ? 'Image ' : '图片 ') + `${currentImg} / ${IMG_COUNT}`; if (!audioReady) ensureAudio(); tone(1500,0.04,'square',0.08); }
+
+  imagesBtn.addEventListener('click', ()=> openGallery(1));
+  imgClose.addEventListener('click', closeGallery);
+  imgPrev.addEventListener('click', prevImg);
+  imgNext.addEventListener('click', nextImg);
+  imgModal.addEventListener('click', (e)=> { if (e.target === imgModal) closeGallery(); });
+  window.addEventListener('keydown', (e)=> { if (imgModal.style.display==='flex'){ if (e.key==='ArrowLeft') prevImg(); if (e.key==='ArrowRight') nextImg(); if (e.key==='Escape') closeGallery(); } });
+
+  
+  let tStartX = 0;
+  imgInner.addEventListener('touchstart', (e)=> { tStartX = e.touches[0].clientX; }, {passive:true});
+  imgInner.addEventListener('touchend', (e)=> { const dx = e.changedTouches[0].clientX - tStartX; if (dx>40) prevImg(); if (dx<-40) nextImg(); }, {passive:true});
+
+  
+  let paged = false;
+  const paragraphs = Array.from(document.querySelectorAll('#content > p, #content > .footerNote'));
+  const PER_PAGE = 3;
+  let pages = [];
+  function buildPages(){
+    pages = [];
+    for (let i=0;i<paragraphs.length;i+=PER_PAGE){
+      const chunk = paragraphs.slice(i, i+PER_PAGE);
+      const wrapper = document.createElement('div');
+      wrapper.style.padding='12px';
+      chunk.forEach(n => wrapper.appendChild(n.cloneNode(true)));
+      pages.push(wrapper);
+    }
+  }
+  buildPages();
+
+  let pagesContainer = null, currentPageIndex = 0;
+  function enterPaged(){
+    if (paged) return;
+    paged = true; reader.style.display='none';
+    pagesContainer = document.createElement('div');
+    pagesContainer.style.display='flex'; pagesContainer.style.alignItems='center'; pagesContainer.style.justifyContent='center';
+    pagesContainer.style.minHeight='58vh'; pagesContainer.style.position='relative'; pagesContainer.style.padding='12px';
+    pagesContainer.appendChild(buildPageView(0));
+    $('#page').appendChild(pagesContainer);
+    if (!audioReady) ensureAudio(); tone(900,0.06,'square',0.09);
+  }
+  function exitPaged(){
+    if (!paged) return;
+    paged = false; if (pagesContainer) pagesContainer.remove(); reader.style.display='block';
+    if (!audioReady) ensureAudio(); tone(1100,0.04,'triangle',0.08);
+  }
+  function buildPageView(idx){
+    const view = document.createElement('div');
+    view.style.width='86%'; view.style.maxWidth='820px'; view.style.minHeight='48vh';
+    view.style.background='linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.02))';
+    view.style.borderRadius='10px'; view.style.padding='18px'; view.style.boxShadow='inset 0 0 30px rgba(0,0,0,0.08)';
+    view.appendChild(pages[idx].cloneNode(true));
+    return view;
+  }
+  function turnPage(to){
+    if (!paged || !pagesContainer) return;
+    to = (to + pages.length) % pages.length;
+    const old = pagesContainer.querySelector('div');
+    const next = buildPageView(to);
+    pagesContainer.appendChild(next);
+    old.style.transition = 'transform .72s cubic-bezier(.2,.9,.25,1), opacity .45s';
+    old.style.transform = 'rotateY(-160deg) translateX(-24px) skewX(-2deg)';
+    old.style.opacity = '0';
+    if (!audioReady) ensureAudio(); tone(820,0.06,'square',0.12);
+    setTimeout(()=> old.remove(), 720);
+    currentPageIndex = to;
+  }
+  pageModeBtn.addEventListener('click', ()=> { if (!paged) enterPaged(); else exitPaged(); });
+  window.addEventListener('keydown', (e)=> { if (paged){ if (e.key==='ArrowRight') turnPage(currentPageIndex+1); if (e.key==='ArrowLeft') turnPage(currentPageIndex-1); } });
+  document.addEventListener('click', (e)=> { if (!paged) return; const w = window.innerWidth; const x = e.clientX; if (x > w*0.66) turnPage(currentPageIndex+1); if (x < w*0.34) turnPage(currentPageIndex-1); });
+
+
+  let rainRunning = false, drops = [], rainRAF = null;
+  function resizeRain(){
+    const dpr = window.devicePixelRatio || 1;
+    const w = window.innerWidth;
+    const h = window.innerHeight;
+    rainCanvas.style.width = w + 'px';
+    rainCanvas.style.height = h + 'px';
+    rainCanvas.width = Math.round(w * dpr);
+    rainCanvas.height = Math.round(h * dpr);
+    if (rainCtx) rainCtx.setTransform(dpr,0,0,dpr,0,0);
+  }
+  window.addEventListener('resize', () => setTimeout(resizeRain, 120));
+  resizeRain();
+
+  function spawnDrops(count){
+    drops = [];
+    const w = window.innerWidth;
+    const h = window.innerHeight;
+    for (let i=0;i<count;i++){
+      drops.push({ x: Math.random()*w, y: Math.random()*h - h*0.5, len: 10 + Math.random()*30, xs: -1 + Math.random()*2, ys: 6 + Math.random()*12, alpha: 0.12 + Math.random()*0.6, width: 1 + Math.random()*1.5 });
+    }
+  }
+  function drawRain(){
+    if (!rainRunning || !rainCtx) return;
+    const w = rainCanvas.width / (window.devicePixelRatio || 1);
+    const h = rainCanvas.height / (window.devicePixelRatio || 1);
+    rainCtx.clearRect(0,0,w,h);
+    rainCtx.lineCap = 'round';
+    for (let r of drops){
+      rainCtx.strokeStyle = `rgba(180,230,255,${r.alpha})`;
+      rainCtx.lineWidth = r.width;
+      rainCtx.beginPath();
+      rainCtx.moveTo(r.x, r.y);
+      rainCtx.lineTo(r.x + r.xs*2, r.y + r.len);
+      rainCtx.stroke();
+      r.x += r.xs; r.y += r.ys;
+      if (r.y > h + 40 || r.x < -60 || r.x > w + 60){
+        r.x = Math.random()*w; r.y = -10 - Math.random()*h*0.2; r.xs = -1 + Math.random()*2; r.ys = 6 + Math.random()*12;
+      }
+    }
+    rainRAF = requestAnimationFrame(drawRain);
+  }
+  function startRain(){
+    if (!rainCtx) return;
+    spawnDrops(Math.max(120, Math.round((window.innerWidth*window.innerHeight)/9000)));
+    rainCanvas.style.display = 'block';
+    rainRunning = true;
+    if (!audioReady) ensureAudio(); tone(700,0.06,'sine',0.08);
+    if (rainRAF) cancelAnimationFrame(rainRAF);
+    rainRAF = requestAnimationFrame(drawRain);
+  }
+  function stopRain(){
+    rainRunning = false;
+    if (rainRAF) cancelAnimationFrame(rainRAF);
+    rainCanvas.style.display = 'none';
+    if (!audioReady) ensureAudio(); tone(420,0.05,'sine',0.06);
+  }
+  rainBtn.addEventListener('click', ()=> { if (!audioReady) ensureAudio(); if (rainRunning) stopRain(); else startRain(); });
+
+  
+  setTimeout(updateRangeFromScroll, 120);
+
+  
+  window._chapter = { openGallery, closeGallery, startRain, stopRain, enterPaged, exitPaged, turnPage };
+
+}); 
+</script>
+</body>
+</html>
